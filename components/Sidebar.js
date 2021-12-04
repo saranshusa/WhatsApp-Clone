@@ -8,9 +8,11 @@ import { auth, db } from "../firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useCollection } from "react-firebase-hooks/firestore";
 import Chat from "./Chat";
+import { useState } from "react";
 
 function Sidebar() {
   const [user] = useAuthState(auth);
+  const [newChatVisibility, setNewChatVisibility] = useState("none");
 
   const userChatRef = db
     .collection("chats")
@@ -46,7 +48,7 @@ function Sidebar() {
         <UserAvatar src={user.photoURL} onClick={() => auth.signOut()} />
         <IconsContainer>
           <IconButton>
-            <ChatIcon />
+            <ChatIcon onClick={createChat} />
           </IconButton>
           <IconButton>
             <MoreVertIcon />
@@ -57,11 +59,12 @@ function Sidebar() {
         <SearchIcon />
         <SearchInput placeholder="Search in chats" />
       </Search>
-      <SidebarButton onClick={createChat}>Start a new chat</SidebarButton>
 
       {chatsSnapshot?.docs.map((chat) => (
         <Chat key={chat.id} id={chat.id} users={chat.data().users} />
       ))}
+
+      <NewChat style={{ display: { newChatVisibility } }} />
     </Container>
   );
 }
@@ -70,11 +73,12 @@ export default Sidebar;
 
 const Container = styled.div`
   flex: 0.45;
-  border-right: 1px solid whitesmoke;
+  border-right: 1px solid #323739;
   height: 100vh;
   min-width: 300px;
   max-width: 350px;
   overflow-y: scroll;
+  background-color: #131c21;
 
   ::-webkit-scrollbar {
     display: none;
@@ -88,13 +92,12 @@ const Header = styled.div`
   display: flex;
   position: sticky;
   justify-content: space-between;
-  background-color: white;
+  background-color: #2a2f32;
   top: 0;
   z-index: 1;
   align-items: center;
   padding: 15px;
   height: 80px;
-  border-bottom: 1px solid whitesmoke;
 `;
 
 const UserAvatar = styled(Avatar)`
@@ -111,17 +114,25 @@ const Search = styled.div`
   align-items: center;
   padding: 20px;
   border-radius: 2px;
+  background-color: #323739;
+  border-bottom: 1px solid #2a2f32;
 `;
 
 const SearchInput = styled.input`
   outline: none;
   border: none;
   flex: 1;
+  background-color: transparent;
+  margin-left: 10px;
+  color: #f1f1f2;
 `;
 
-const SidebarButton = styled(Button)`
-  width: 100%;
-  color: black;
-  border-top: 1px solid whitesmoke;
-  border-bottom: 1px solid whitesmoke;
+const NewChat = styled.div`
+  background-color: red;
+  width: 100vw;
+  height: 100vh;
+  z-index: 101;
+  position: fixed;
+  top: 0;
+  left: 0;
 `;
