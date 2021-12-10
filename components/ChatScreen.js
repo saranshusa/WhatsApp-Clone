@@ -9,7 +9,7 @@ import { useCollection } from "react-firebase-hooks/firestore";
 import Message from "./Message";
 import InsertEmoticonIcon from "@mui/icons-material/InsertEmoticon";
 import MicIcon from "@mui/icons-material/Mic";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import getRecipientEmail from "../utils/getRecipientEmail";
 import firebase from "firebase/compat/app";
 import TimeAgo from "timeago-react";
@@ -18,6 +18,7 @@ function ChatScreen({ chat, messages }) {
   const [user] = useAuthState(auth);
   const [input, setInput] = useState("");
   const router = useRouter();
+  const endOfMessagesRef = useRef(null);
 
   const [messagesSnapshot] = useCollection(
     db
@@ -52,6 +53,13 @@ function ChatScreen({ chat, messages }) {
     }
   };
 
+  const scrollToBottom = () => {
+    endOfMessagesRef.current.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  };
+
   const sendMessage = (e) => {
     e.preventDefault();
 
@@ -71,6 +79,7 @@ function ChatScreen({ chat, messages }) {
     });
 
     setInput("");
+    scrollToBottom();
   };
 
   const recipient = recipientSnapshot?.docs?.[0]?.data();
@@ -113,14 +122,18 @@ function ChatScreen({ chat, messages }) {
 
       <MessageContainer>
         {showMessages()}
-        <EndOfMessage />
+        <EndOfMessage ref={endOfMessagesRef} />
       </MessageContainer>
 
       <InputContainer>
         <IconButton>
           <InsertEmoticonIcon />
         </IconButton>
-        <Input placeholder='Type a message' value={input} onChange={(e) => setInput(e.target.value)} />
+        <Input
+          placeholder="Type a message"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+        />
         <button hidden onClick={sendMessage} type="submit" disabled={!input}>
           Send
         </button>
@@ -173,7 +186,9 @@ const MessageContainer = styled.div`
   min-height: 90vh;
 `;
 
-const EndOfMessage = styled.div``;
+const EndOfMessage = styled.div`
+  margin-bottom: 50px;
+`;
 
 const InputContainer = styled.form`
   display: flex;

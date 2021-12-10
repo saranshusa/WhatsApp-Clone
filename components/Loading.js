@@ -1,4 +1,6 @@
 import styled from "styled-components";
+import LoadingSVG from "../public/loading.svg";
+import Image from "next/image";
 
 function Loading() {
   return (
@@ -24,7 +26,7 @@ function Loading() {
           style={{ height: "200px", width: "200px", marginBottom: "50px" }}
           src="https://www.logo.wine/a/logo/WhatsApp/WhatsApp-Logo.wine.svg"
         />
-        <img src="https://download1638.mediafire.com/xb53dthiicig/jals99b1xg2d5ww/294.svg" />
+        <Image src={LoadingSVG} layout='fixed' />
       </div>
     </div>
   );

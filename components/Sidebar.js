@@ -9,10 +9,12 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { useCollection } from "react-firebase-hooks/firestore";
 import Chat from "./Chat";
 import { useState } from "react";
+import SendIcon from "@mui/icons-material/Send";
 
 function Sidebar() {
   const [user] = useAuthState(auth);
   const [newChatVisibility, setNewChatVisibility] = useState("none");
+  const [input, setInput] = useState("");
 
   const userChatRef = db
     .collection("chats")
@@ -20,19 +22,26 @@ function Sidebar() {
 
   const [chatsSnapshot] = useCollection(userChatRef);
 
-  const createChat = () => {
-    const input = prompt("Enter email");
+  const openCreateChat = () => {
+    setNewChatVisibility("block");
+  };
 
-    if (!input) return null;
+  const createChat = (e) => {
+    e.preventDefault();
 
-    if (
-      EmailValidator.validate(input) &&
-      !chatAlreadyExists(input) &&
-      input !== user.email
-    ) {
-      db.collection("chats").add({
-        users: [user.email, input],
-      });
+    if (input !== "") {
+      if (
+        EmailValidator.validate(input) &&
+        !chatAlreadyExists(input) &&
+        input !== user.email
+      ) {
+        db.collection("chats").add({
+          users: [user.email, input],
+        });
+      }
+
+      setInput("");
+      setNewChatVisibility("none");
     }
   };
 
@@ -48,7 +57,7 @@ function Sidebar() {
         <UserAvatar src={user.photoURL} onClick={() => auth.signOut()} />
         <IconsContainer>
           <IconButton>
-            <ChatIcon onClick={createChat} />
+            <ChatIcon onClick={openCreateChat} />
           </IconButton>
           <IconButton>
             <MoreVertIcon />
@@ -64,7 +73,27 @@ function Sidebar() {
         <Chat key={chat.id} id={chat.id} users={chat.data().users} />
       ))}
 
-      <NewChat style={{ display: { newChatVisibility } }} />
+      <NewChat style={{ display: `${newChatVisibility}` }}>
+        <NewChatForm>
+          <h3>Start new chat</h3>
+          <InputContainer>
+            <Input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Type recipient's email"
+            />
+            <IconButton
+              type="submit"
+              style={{
+                position: "absolute",
+                right: "5px",
+              }}
+            >
+              <SendIcon onClick={createChat} />
+            </IconButton>
+          </InputContainer>
+        </NewChatForm>
+      </NewChat>
     </Container>
   );
 }
@@ -128,11 +157,57 @@ const SearchInput = styled.input`
 `;
 
 const NewChat = styled.div`
-  background-color: red;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: saturate(180%) blur(10px);
   width: 100vw;
   height: 100vh;
   z-index: 101;
   position: fixed;
   top: 0;
   left: 0;
+  color: black;
+`;
+
+const NewChatForm = styled.form`
+  width: 40vw;
+  height: 50vh;
+  margin: auto;
+  margin-top: 50vh;
+  text-align: center;
+  transform: translateY(-50%);
+  background-color: #323739;
+  display: flex;
+  flex-direction: column;
+  border-radius: 10px;
+  justify-content: center;
+
+  > h3 {
+    font-weight: 500;
+    font-size: 1.5rem;
+    margin-bottom: 5vh;
+  }
+`;
+
+const InputContainer = styled.div`
+  display: flex;
+  width: 80%;
+  margin-left: auto;
+  margin-right: auto;
+  position: relative;
+
+  * {
+    color: black !important;
+    align-self: center;
+  }
+`;
+
+const Input = styled.input`
+  color: black;
+  border: none;
+  width: 100%;
+  border-radius: 25px;
+  padding: 15px 25px;
+  font-size: 1rem;
+  outline: none;
+  margin: auto;
 `;
